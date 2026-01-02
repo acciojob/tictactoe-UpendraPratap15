@@ -1,9 +1,13 @@
+// Get DOM elements
 const player1Input = document.getElementById('player1');
 const player2Input = document.getElementById('player2');
 const submitBtn = document.getElementById('submit');
 const messageEl = document.querySelector('.message');
-const cells = Array.from({ length: 9 }, (_, i) => document.getElementById(String(i + 1)));
+const cells = Array.from({ length: 9 }, (_, i) =>
+  document.getElementById(String(i + 1))
+);
 
+// Game state
 let player1Name = '';
 let player2Name = '';
 let currentPlayer = 'x'; // 'x' or 'o'
@@ -23,15 +27,16 @@ const winningCombos = [
 ];
 
 function setMessage(text) {
+  // NO extra spaces, NO extra text; exact text for Cypress
   messageEl.textContent = text;
 }
 
 function startGame() {
-  // Read names exactly as test expects
+  // Read names (tests type "Player1" and "Player2")
   player1Name = player1Input.value || 'Player1';
   player2Name = player2Input.value || 'Player2';
 
-  // Reset game state
+  // Reset state
   currentPlayer = 'x';
   currentPlayerName = player1Name;
   gameOver = false;
@@ -42,7 +47,8 @@ function startGame() {
     cell.textContent = '';
   });
 
-  // VERY IMPORTANT: exact text for Cypress assertion
+  // EXACT message for first assertion:
+  // cy.get('.message').should('contain', "Player1, you're up")
   setMessage(`${player1Name}, you're up`);
 }
 
@@ -56,21 +62,22 @@ function checkWinner() {
 }
 
 function checkDraw() {
-  return board.every(square => square !== '');
+  return board.every(cell => cell !== '');
 }
 
 function handleCellClick(index) {
   if (gameOver) return;
   if (board[index] !== '') return;
 
-  // Set mark on board and UI
+  // Put mark on board
   board[index] = currentPlayer;
   cells[index].textContent = currentPlayer;
 
   const winner = checkWinner();
   if (winner) {
     gameOver = true;
-    // Exact winner messages for Cypress
+    // EXACT win messages for Cypress:
+    // "Player1 congratulations you won!" or "Player2 congratulations you won!"
     if (winner === 'x') {
       setMessage(`${player1Name} congratulations you won!`);
     } else {
@@ -85,7 +92,8 @@ function handleCellClick(index) {
     return;
   }
 
-  // Toggle player and set exact turn message
+  // Switch player and set EXACT message:
+  // after first move: "Player2, you're up"
   if (currentPlayer === 'x') {
     currentPlayer = 'o';
     currentPlayerName = player2Name;
