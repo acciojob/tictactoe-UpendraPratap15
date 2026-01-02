@@ -1,80 +1,98 @@
-//your JS code here. If required.
-// Game state
-let player1 = "";
-let player2 = "";
-let currentPlayer = 1; // 1 for player1 (X), 2 for player2 (O)
-let board = ["", "", "", "", "", "", "", "", ""];
-let gameActive = false;
+const player1Input = document.getElementById('player1');
+const player2Input = document.getElementById('player2');
+const submitBtn = document.getElementById('submit');
+const messageEl = document.querySelector('.message');
+const cells = Array.from({ length: 9 }, (_, i) => document.getElementById(String(i + 1)));
 
-// DOM elements
-const playerForm = document.getElementById("player-form");
-const gameBoard = document.getElementById("game-board");
-const player1Input = document.getElementById("player-1");
-const player2Input = document.getElementById("player-2");
-const submitBtn = document.getElementById("submit");
-const messageEl = document.getElementById("message");
+let player1Name = '';
+let player2Name = '';
+let currentPlayer = 'x'; // 'x' or 'o'
+let currentPlayerName = '';
+let board = Array(9).fill('');
+let gameOver = false;
 
-// Start game when names submitted
-submitBtn.addEventListener("click", function () {
-  player1 = player1Input.value.trim() || "Player 1";
-  player2 = player2Input.value.trim() || "Player 2";
+const winningCombos = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
+];
 
-  if (player1 && player2) {
-    // Hide form, show game
-    playerForm.style.display = "none";
-    gameBoard.style.display = "block";
-
-    // Set initial message
-    updateMessage();
-  }
-});
-
-// Cell click handler
-for (let i = 1; i <= 9; i++) {
-  const cell = document.getElementById(i.toString());
-  cell.addEventListener("click", function () {
-    const index = parseInt(cell.id) - 1; // Convert to 0-based index
-
-    if (board[index] === "" && gameActive) {
-      // Place mark
-      board[index] = currentPlayer === 1 ? "x" : "o";
-      cell.textContent = board[index];
-      cell.classList.add(board[index]);
-
-      // Check for winner
-      if (checkWinner()) {
-        const winnerName = currentPlayer === 1 ? player1 : player2;
-        messageEl.textContent = `${winnerName} congratulations you won!`;
-        gameActive = false;
-        return;
-      }
-
-      // Switch player
-      currentPlayer = currentPlayer === 1 ? 2 : 1;
-      updateMessage();
-    }
-  });
+function setMessage(text) {
+  messageEl.textContent = text;
 }
 
-function updateMessage() {
-  const currentPlayerName = currentPlayer === 1 ? player1 : player2;
-  const mark = currentPlayer === 1 ? "X" : "O";
-  messageEl.textContent = `${currentPlayerName}, you're up! (${mark})`;
+function startGame() {
+  player1Name = player1Input.value || 'Player1';
+  player2Name = player2Input.value || 'Player2';
+
+  currentPlayer = 'x';
+  currentPlayerName = player1Name;
+  gameOver = false;
+  board = Array(9).fill('');
+
+  cells.forEach(cell => {
+    cell.textContent = '';
+  });
+
+  setMessage(`${player1Name}, you're up`);
 }
 
 function checkWinner() {
-  // All winning combinations (rows, columns, diagonals)
-  const winPatterns = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
-    [0, 4, 8], [2, 4, 6] // diagonals
-  ];
-
-  for (let pattern of winPatterns) {
-    const [a, b, c] = pattern;
+  for (const [a, b, c] of winningCombos) {
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return true;
+      return board[a]; // 'x' or 'o'
     }
   }
-  return false;
+  return null;
 }
+
+function checkDraw() {
+  return board.every(square => square !== '');
+}
+
+function handleCellClick(index) {
+  if (gameOver) return;
+  if (board[index] !== '') return;
+
+  board[index] = currentPlayer;
+  cells[index].textContent = currentPlayer;
+
+  const winner = checkWinner();
+  if (winner) {
+    gameOver = true;
+    if (winner === 'x') {
+      setMessage(`${player1Name} congratulations you won!`);
+    } else {
+      setMessage(`${player2Name} congratulations you won!`);
+    }
+    return;
+  }
+
+  if (checkDraw()) {
+    gameOver = true;
+    setMessage('Game ended in a draw');
+    return;
+  }
+
+  if (currentPlayer === 'x') {
+    currentPlayer = 'o';
+    currentPlayerName = player2Name;
+  } else {
+    currentPlayer = 'x';
+    currentPlayerName = player1Name;
+  }
+
+  setMessage(`${currentPlayerName}, you're up`);
+}
+
+// attach events
+submitBtn.addEventListener('click', startGame);
+
+cells.forEach((cell, idx) => {
+  cell.addEventListener('click', () => handleCellClick(idx));
+});
