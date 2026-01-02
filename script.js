@@ -27,18 +27,22 @@ function setMessage(text) {
 }
 
 function startGame() {
+  // Read names exactly as test expects
   player1Name = player1Input.value || 'Player1';
   player2Name = player2Input.value || 'Player2';
 
+  // Reset game state
   currentPlayer = 'x';
   currentPlayerName = player1Name;
   gameOver = false;
   board = Array(9).fill('');
 
+  // Clear board UI
   cells.forEach(cell => {
     cell.textContent = '';
   });
 
+  // VERY IMPORTANT: exact text for Cypress assertion
   setMessage(`${player1Name}, you're up`);
 }
 
@@ -59,12 +63,14 @@ function handleCellClick(index) {
   if (gameOver) return;
   if (board[index] !== '') return;
 
+  // Set mark on board and UI
   board[index] = currentPlayer;
   cells[index].textContent = currentPlayer;
 
   const winner = checkWinner();
   if (winner) {
     gameOver = true;
+    // Exact winner messages for Cypress
     if (winner === 'x') {
       setMessage(`${player1Name} congratulations you won!`);
     } else {
@@ -79,6 +85,7 @@ function handleCellClick(index) {
     return;
   }
 
+  // Toggle player and set exact turn message
   if (currentPlayer === 'x') {
     currentPlayer = 'o';
     currentPlayerName = player2Name;
@@ -90,7 +97,7 @@ function handleCellClick(index) {
   setMessage(`${currentPlayerName}, you're up`);
 }
 
-// attach events
+// Event listeners
 submitBtn.addEventListener('click', startGame);
 
 cells.forEach((cell, idx) => {
